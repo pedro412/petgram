@@ -6,7 +6,23 @@ import { ApolloProvider } from 'react-apollo'
 import Context from './Context'
 
 const client = new ApolloClient({
-  uri: 'https://petgram-api-pedro.now.sh/graphql'
+  uri: 'https://petgram-api-pedro.now.sh/graphql',
+  request: operation => {
+    const token = window.sessionStorage.getItem('token')
+    const authorization = token ? `Bearer ${token}` : ''
+    operation.setContext({
+      headers: {
+        authorization
+      }
+    })
+  },
+  onError: error => {
+    const { netWorkError } = error
+    if (netWorkError && netWorkError.result.code === 'invalid_token') {
+      window.sessionStorage.removeItem('token')
+      window.location.href = '/'
+    }
+  }
 })
 
 ReactDOM.render(
